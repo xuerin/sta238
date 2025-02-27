@@ -352,6 +352,62 @@ You are tasked with investigating the variability in the daily temperatures in t
   \item[f)] Find the interval of ratios that occur 90\% of the time (Use R to find the appropriate percentiles to answer this question! What percentiles should you use?). How can you interpret this interval to infer how well the sample variance measures against the true variance that you are trying to estimate?
 \end{itemize}
 
+```{r}
+set.seed(238)
+feb_sample = c(-11.3,	-7.8,	-1.3,	-5.5,	-7.4,	-2.1,	-5.4,
+-5.7,	-3.1,	-7.1,	-7.3,	-7.0,	-5.8,	-6.6,
+-4.4,	-7.3,	-10.3, -10.5,	-9.4,	-9.5,	-9.3)
+# question a: 
+sample_var <- var(feb_sample)
+
+# question b:
+n <- length(feb_sample)
+n^n # all possible data sets
+choose(2*n - 1, n) # useful data sets
+
+# question c:
+B <- 2000
+boot_variances <- c()
+for (i in 1:B) {
+  boot_sample <- sample(feb_sample, n, replace = TRUE)
+  boot_variances[i] <- var(boot_sample)
+}
+
+
+# Question is asking for the middle 90%, which means you need to leave out the tails.
+relative_freq_90 <- quantile(boot_variances, c(0.05, 0.95))
+# should be an inclusive range [q_05, q_95]
+
+# question d:
+# sigma^2 is the variance of the original sample, which we calculated already, and S^2_n are the bootstrapped variances from 1 to B.
+ratio_bootstrap <- c()
+for (i in 1:B) {
+  ratio_bootstrap[i] <- (boot_variances[i]/sample_var)
+}
+
+# question e:
+
+library(ggplot2)
+library(latex2exp)  # For TeX labels
+
+# Create the plot
+norm_var_plot <- ggplot(data.frame(ratio_bootstrap), aes(x = ratio_bootstrap)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, 
+                 fill = 'darkgoldenrod2', color = 'grey30', alpha = 0.5) +
+  geom_vline(aes(xintercept = 1), linetype = "dashed", color = 'red') +
+  labs(x = TeX(r'($S_n^2 / \sigma^2$)'), 
+       y = 'Density', 
+       subtitle = TeX(paste("Empirical, Normalized Variance Distribution"))) +
+  theme_minimal()
+
+# Display the plot
+print(norm_var_plot)
+
+# question f:
+ relative_freq_norm_90 <- quantile(ratio_bootstrap, c(0.05, 0.95))
+ 
+```
+
 \noindent 2. 
 We return to the system interfailure times (measured in CPU seconds) data set from Week 2. We previously established that an $Exp(\theta)$ would be a suitable model distribution for the data. In this problem, you will investigate the \textbf{median failure time} instead of the mean failure time. 
 
@@ -386,3 +442,50 @@ kable(failure.mat)
     Find both of these estimates. 
   \item[e)] Perform parametric bootstrap and plot the distribution of \textbf{centred medians}. Use `B = 1000`. How does the parametric bootstrap compare to the empirical bootstrap, visually?
 \end{itemize}
+
+```{r}
+set.seed(238)
+# question a:
+# Parametric bootstrap is more appropriate because we are given a partially specified model with theta hat, which estimates the CDF with theta.
+
+# question b:
+# The problem here is that we do not know the true parameter, rather, only an estimate (theta hat), which may be biased or inaccurate. The sample could be unrepresentative due to outliers, small sample size, or data collection issues.
+
+# question c:
+sample_failures <- c(30, 113, 81, 115, 9, 2, 91, 112, 15, 138,
+              50, 77, 24, 108, 88, 670, 120, 26, 114, 325, 
+              55, 242, 68, 422, 180, 10, 1146, 600, 15, 36, 
+              4, 0, 8, 227, 65, 176, 58, 457, 300, 97,
+              263, 452, 255, 197, 193, 6, 79, 816, 1351, 148,
+              21, 233, 134, 357, 193, 236, 31, 369, 748, 0,
+              232, 300, 365, 1222, 543, 10, 16, 529, 379, 44,
+              129, 810, 290, 300, 529, 281, 160, 828, 1011, 445,
+              296, 1755, 1064, 1783, 860, 983, 707, 33, 868, 724,
+              2323, 2930, 1461, 843, 12, 261, 1800, 865, 1435, 30,
+              143, 108, 0, 3110, 1247, 943, 700, 875, 245, 729,
+              1896, 447, 386, 446, 122, 990, 948, 1082, 22, 75, 
+              482, 5509, 100, 10, 1071, 371, 790, 6150, 3321, 1045,
+              648, 5485, 1160, 1864, 4116)
+B <- 1000
+n <- length(sample_failures)
+sample_median <- median(sample_failures)
+bootstrap_medians_centre <- c()
+for (i in 1:B) {
+  bootstrap_medians_centre[i] <- median(sample(sample_failures, n, replace = TRUE) - sample_median)
+}
+centred_medians_plot <- ggplot(data.frame(bootstrap_medians_centre), aes(x = bootstrap_medians_centre)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, 
+                 fill = 'darkgoldenrod2', color = 'grey30', alpha = 0.5) +
+  geom_vline(aes(xintercept = 1), linetype = "dashed", color = 'red') +
+  labs(x = TeX(r'(Med(boot strapped sample) - med(sample))'), 
+       y = 'Density', 
+       subtitle = TeX(paste("Empirical, Centered Median Distribution"))) +
+  theme_minimal()
+
+# Display the plot
+print(centred_medians_plot)
+
+# question d
+# too tired to type this out but find theta hat through MLE or MOM, call it theta_hat
+# same bootstrap process except samples are coming from med(rexp(n, rate = 1/theta_hat))
+```
