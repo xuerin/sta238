@@ -1,3 +1,2 @@
-# bootstrapping
+# bootstrapping, invertible CDF, WLLN, KDE
 
-I am a huge fan. 
