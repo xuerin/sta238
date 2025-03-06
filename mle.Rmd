@@ -1,0 +1,44 @@
+```{r, echo = F, include = F}
+
+# Load all necessary R Packages first
+
+packages <- c("tidyverse", "latex2exp", "gridExtra", "rvest", "kableExtra", "ggplot2")
+lapply(packages, require, character.only = T)
+```
+originally $L(\theta) = P(H_1 = h_1)P(H_2=h_2)...P(H_n = h_n)= \Pi_{i=1}^{n} p_\theta(Xi)$
+
+bern dist likelihood function because 
+size: a, b
+prob: p, 1-p
+these are the only combinations 
+therefore by def $L(\theta) = p^a(1-p)^b$
+```{r}
+bern_L_fun <- function(p, samp) {
+  s1 <- sum(samp)
+  s0 <- sum(samp == 0)
+  p^s1 * (1 - p)^s0
+}
+```
+log likelihood
+plot to find max theta
+use ggplot geom_function
+```{r}
+bern_logL_fun <- function(p, samp){
+  s1 <- sum(samp)
+  s0 <- sum(samp == 0)
+  s1*log(p) + s0*log((1-p))
+}
+H <- c(0,1,0,1,1)
+p <- 0.3
+ggplot() +
+  theme_minimal() +
+  geom_function(fun = bern_L_fun, args = list(samp = H), xlim = c(0, 1)) +
+  labs(x = "p", y = "Likelihood", title = "Using geom_function()")
+```
+
+```{r}
+ggplot() +
+  theme_minimal() +
+  geom_function(fun = bern_L_fun, args = list(samp = H), xlim = c(0, 1)) +
+  labs(x = "p", y = "Likelihood", title = "Using geom_function()")
+```
