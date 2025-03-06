@@ -21,13 +21,21 @@ bern_L_fun <- function(p, samp) {
 ```
 log likelihood
 plot to find max theta
-use ggplot geom_function
+
 ```{r}
 bern_logL_fun <- function(p, samp){
   s1 <- sum(samp)
   s0 <- sum(samp == 0)
   s1*log(p) + s0*log((1-p))
 }
+```
+use ggplot geom_function
+args:
+fun = func name 
+args = list(the data)
+xlim = xaxis limit
+n = number of points to eval, optional. default is cont. func
+```{r}
 H <- c(0,1,0,1,1)
 p <- 0.3
 ggplot() +
@@ -35,10 +43,83 @@ ggplot() +
   geom_function(fun = bern_L_fun, args = list(samp = H), xlim = c(0, 1)) +
   labs(x = "p", y = "Likelihood", title = "Using geom_function()")
 ```
+mle is great because 
+asympottically unbiased: $\lim_{n \to infty}E(T_n) = \theta$
+asympotically min var amongst all unbiased estimators (more efficient)
+asymptotically normally dist.
+invariance principle: apply a RV function on the MLE estimator. which will still estimate the RV function transformation. 
 
+let's see asymptotical unbiasedness 
 ```{r}
+# simulate lambda hat_n 
+# Save the results to a data frame with columns indicating sample size n
+ #in column n and the simulated estimate in estimate for each iteration.
+#Plot histogram along x-axis for each sample size arranged in a 2x2 matrix using facet_wrap(vars(n), nrow = 2, scale = "free"). Use bins = 15.
+
+# Question 1: Exponential(1) Simulation
+
+library(ggplot2)
+library(dplyr)
+
+m <- 500
+ns <- c(1, 10, 100, 1000)
+estimates <- list()
+
+for (n in ns) { 
+  lambda_hats <- numeric(m)
+  for (i in seq(m)) {
+    lambda_hats[i] <- 1 / mean(rexp(n, rate = 1))  # Simulate and compute lambda_hat
+  }
+  estimates[[as.character(n)]] <- data.frame(n = n, estimate = lambda_hats)
+}
+
+estimates_df <- bind_rows(estimates)
+
+ggplot(estimates_df, aes(x = estimate)) +
+  theme_minimal() +
+  geom_histogram(bins = 15, fill = "blue", alpha = 0.6, color = "black") +
+  facet_wrap(vars(n), nrow = 2, scales = "free") +
+  labs(title = "Sampling Distribution of λ̂n", x = "Estimate", y = "Frequency")
+
+```
+
+asymptotically efficient 
+```{r}
+# need to create function of variance of the estimator 
+# Question 2: Binomial(10, p) Simulation
+
+library(ggplot2)
+
+m <- 25
+ns <- seq(1, 100)
+var_p_hats <- numeric(length(ns))
+p <- 0.1
+
+# Function for theoretical variance of MLE estimator
+theoretical_var_p_hat <- function(n) {
+  (p * (1 - p)) / (10 * n)
+}
+
+# Function for Cramér-Rao lower bound 
+var_lwr_bound_binom <- function(n) {
+  p * (1 - p) / (10 * n)
+}
+
+for (n in ns) { 
+  p_hats <- numeric(m)
+  for (i in seq(m)) {
+    p_hats[i] <- mean(rbinom(n, size = 10, prob = p) / 10)
+  }
+  var_p_hats[n] <- var(p_hats)
+}
+
+var_df <- data.frame(n = ns, var_p_hat = var_p_hats)
+
 ggplot() +
   theme_minimal() +
-  geom_function(fun = bern_L_fun, args = list(samp = H), xlim = c(0, 1)) +
-  labs(x = "p", y = "Likelihood", title = "Using geom_function()")
+  labs(x = "Sample size, n", y = "Variance of the estimator") +
+  geom_function(fun = var_lwr_bound_binom, color = "green", linewidth = 1.2) +
+  geom_function(fun = theoretical_var_p_hat, color = "blue", linewidth = 1.2, linetype = "dashed") +
+  geom_point(data = var_df, aes(x = n, y = var_p_hat), color = "black")
+
 ```
