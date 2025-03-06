@@ -1,0 +1,44 @@
+```{r, echo = F, include = F}
+
+# Load all necessary R Packages first
+
+packages <- c("tidyverse", "latex2exp", "gridExtra", "rvest", "kableExtra")
+lapply(packages, require, character.only = T)
+```
+unbiased: $E(T) = \theta$
+consistency: $T_n \rightarrow ^p \theta$ as $n \rightarrow \infty$ means estimator on larger and larger sample sizes will reflect the true param. perhaps the estimator is biased. but it could still be consistent as sample size inc. 
+
+to show biasedness in r, calculate point estimate of the distribution with estimator and increasing sample sizes. 5, 10, 15, 100. then graph all point estimate, which will show $E(T)$. compare with true $\theta$. if they are the same val, then unbiased. 
+
+```{r}
+# let's estimate 1 realization of some pois distribution with param lambda, and we estimate it with lambda hat to be a sample mean of size 10. 
+simulated_x <- rpois(n = 10, lambda = 1)
+point_estimate_lambda_hat <- mean(simulated_x)
+real_lambda <- exp(-1)
+
+# many realizations, check E(T) as well
+m <- 5000 # number of copies to create
+t1 <- numeric(m) # an empty numeric vector of size m
+for (i in (1:m)) {
+  simulated_x <- rpois(10, lambda = 1)  # calculate sample mean w size ten and randomly generated samples with lambda = 1 5000 times
+  t1[i] <- exp(-mean(simulated_x)) #store all point estimates in vec
+}
+mean(t1) # gets expected val of estimator 
+# expected val of T is pretty close to real_lambda but there is bias, expected val is larger.
+```
+check consistency: increase n from 10 to 1000 in increments of 5, calculate E(T) each time
+```{r}
+m <- 5000
+ns <- seq(10, 1000, 10)
+t1_means <- numeric(length(ns))
+t1 <- c(length(m))
+for (j in seq(length(ns))) { # calculate w sample sizes as computed by ns sequence
+  t1 <- numeric(m)
+  for (i in seq(m)) { # calculate each sample size 5000 times 
+    simulated_x <- rpois(n = ns[j], lambda = 1) 
+    t1[i] <- exp(-mean(simulated_x)) 
+  }
+  t1_means[j] <- mean(t1) # compute each point estimate's mean
+}
+```
+you will see that E(T) converges to the true parameter as ns values get larger. consistency. 

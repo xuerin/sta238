@@ -1,0 +1,40 @@
+```{r, echo = F, include = F}
+
+# Load all necessary R Packages first
+
+packages <- c("tidyverse", "latex2exp", "gridExtra", "rvest", "kableExtra")
+lapply(packages, require, character.only = T)
+```
+efficiency: which estimator has smaller variance
+can find by
+$V(T) = E(T^2) + E(T)^2$ if you have pdf
+or linear rules 
+or in this case simulated sampling distribution then look at spread
+MSE: $E((T-\theta)) = V(\hat{\theta}) + bias^2$
+
+we want small mse, small variance 
+
+```{r}
+m <- 100
+theta <- 1
+t1 <- numeric(m)
+t2 <- numeric(m)
+# for (i in seq(m)) {
+  #u <- runif(n, 0, theta) 
+  #t1[i] <- estimate_theta_mom(u) or whatever the estimator function is
+  #t2[i] <- estimate_theta_mle(u) 
+#}
+t1_df <- data.frame(
+  theta = 1,
+  estimator = "T1",
+  estimate = t1
+)
+t2_df <- data.frame(
+  theta = 1,
+  estimator = "T2",
+  estimate = t2
+)
+combined_df <- bind_rows(t1_df, t2_df)
+combined_df
+#graph shows the historgarm of estimates
+```

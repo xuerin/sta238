@@ -1,0 +1,43 @@
+R does not provide convenient functions for simulating from all distributions. However, you can simulate using the relationship between the CDF and Unif(0,1) for continuous random variables with an invertible CDF.
+```{r, echo = F, include = F}
+
+# Load all necessary R Packages first
+
+packages <- c("tidyverse", "latex2exp", "gridExtra", "rvest", "kableExtra")
+lapply(packages, require, character.only = T)
+```
+
+```{r}
+simulate_sample_with_inverse_cdf <- function(n){
+  # invertible cdf sampling method using unif dist.  
+  original_sim <- runif(n, 0,1) # sample from unif 
+  x <- log(original_sim) # invert the cdf on sample i guess the cdf was e^x
+  print(x)
+}
+# plot_samples <- geom_histogram(param)
+```
+Consider W~ Exp($\lambda = 0.2$), E($\lambda = 5$). The code below simulates n independent copies of W's mean, computes n point estimates. By WLLN: prob that sample mean deviates from the true mean diminishes to 0 as sample size (n) inc to $\infty$
+```{r}
+simulate_mean_with_wlln <- function(n){
+  original_sim <- runif(n, 0, 1)
+  sim_mean <- c()
+  for (i in 1:n){
+    sim_mean[i] <- mean(original_sim[1:i]) # calculate mean n times with each mean being size i which is in 1 to n. 
+  }
+# plot: as n approaches infty, sim_mean[i] approaches its true mean, looks like its hitting a horizontal asymptote (the true mean)
+}
+```
+Also through WLLN, we can also use simulation to estimate tail probabilities. Because it is likely the sample expected value of a prob (with condition) will reflect the true proportion (probability), aka whatever is computed with the actual pdf/cdf, as sample size n inc to $\infty$. We measure sample expected value with indicator var meaning sum of Ber(p). Success when meets condition, sum all, divide by large n, and that is p. Then check the true cdf function with condition. It should be pretty close to sample p.
+RV follows exponential distribution, want to know p$(Y\leq 2)$. 
+```{r}
+simulate_prob_with_wlln <- function(n, x){
+  original_dist_sim <- rexp(n, 0.2) # lambda can be different
+  probs <- (original_dist_sim <= x)
+  mean(probs) # this proprtion should reflect exp dist. cdf func when y is <= 2.
+}
+I <- 1 * (simulate_prob_with_wlln(1000, 2)) / 1000 # # multiplying by 1 converts TRUE to 1 and FALSE to 0
+
+
+# compare 
+pexp(0.2, 2)
+```
