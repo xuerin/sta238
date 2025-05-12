@@ -1,4 +1,4 @@
-more suitable name would be exploratory data analysis and statistical inference
+exploratory data analysis and statistical inference
 
 sample generation/estimation:
 bootstrapping, invertible CDF, WLLN, KDE, MLE, MOM, ECDF ( i forgot) 
